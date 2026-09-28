@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
-title BRABO7X - Clash LIVE Jogo Arena
+title BRABO7X - Clash LIVE Arena
 
 echo ============================================================
-echo           BRABO7X - CARREGANDO ARENA CLASH ROYALE
+echo           BRABO7X - INICIANDO JOGO CLASH ROYALE
 echo ============================================================
 echo.
 
@@ -25,8 +25,8 @@ if %errorlevel%==0 (
 
 if not defined JAVA_BIN (
     echo.
-    echo [ERRO] Java JDK 21 nao foi encontrado no sistema.
-    echo Execute primeiro o arquivo "INSTALAR_TUDO_AUTOMATICO.bat" para instalar o Java.
+    echo [ERRO] Java JDK 21 nao foi encontrado.
+    echo Execute primeiro o arquivo "INSTALAR_TUDO_AUTOMATICO.bat".
     echo.
     pause
     exit /b 1
@@ -41,32 +41,29 @@ if errorlevel 1 (
     ) else if exist "%~dp0.tools\apache-maven-3.9.16\bin\mvn.cmd" (
         set "MVN=%~dp0.tools\apache-maven-3.9.16\bin\mvn.cmd"
     ) else (
-        echo [BRABO7X] Maven nao encontrado localmente. Baixando Maven oficial...
-        if not exist "%~dp0.tools" mkdir "%~dp0.tools"
-        powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u='https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.zip'; $z='%~dp0.tools\maven.zip'; Invoke-WebRequest -Uri $u -OutFile $z; Expand-Archive -Path $z -DestinationPath '%~dp0.tools' -Force; Remove-Item $z -Force"
-        if exist "%~dp0.tools\apache-maven-3.9.16\bin\mvn.cmd" set "MVN=%~dp0.tools\apache-maven-3.9.16\bin\mvn.cmd"
+        echo [BRABO7X] Maven nao encontrado. Execute o "INSTALAR_TUDO_AUTOMATICO.bat".
+        pause
+        exit /b 1
     )
 )
 
-echo [BRABO7X] Compilando e iniciando a janela da Arena JavaFX...
-"%MVN%" -pl client -am javafx:run -Dbrabo7x.tiktok=true
-if errorlevel 1 goto :game_error
-exit /b 0
-
-:game_error
-echo.
-echo ============================================================
-echo [ERRO] Ocorreu uma falha ao iniciar o jogo.
-echo Tentando compilar o projeto do zero para reparar...
-echo ============================================================
-"%MVN%" clean compile -pl client -am
+echo [BRABO7X] Executando arena JavaFX...
+"%MVN%" -pl client javafx:run -Dbrabo7x.tiktok=true
 if errorlevel 1 (
     echo.
-    echo Falha na compilacao. Verifique se o JDK 21 esta configurado corretamente.
-    echo Dica: Execute o "INSTALAR_TUDO_AUTOMATICO.bat" novamente.
+    echo [AVISO] Falha ao rodar diretamente. Compilando modulos e tentando novamente...
+    "%MVN%" clean compile -pl client -am
+    "%MVN%" -pl client javafx:run -Dbrabo7x.tiktok=true
+)
+
+if errorlevel 1 (
+    echo.
+    echo ============================================================
+    echo [ERRO] O jogo nao conseguiu inicializar.
+    echo Verifique o log de erro acima antes de fechar esta janela.
+    echo ============================================================
     pause
     exit /b 1
 )
-"%MVN%" -pl client javafx:run -Dbrabo7x.tiktok=true
-pause
+
 exit /b 0
