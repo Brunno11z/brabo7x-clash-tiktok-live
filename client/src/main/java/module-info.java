@@ -13,5 +13,9 @@ module client {
     opens controllers.modes.runnables;
     opens interactive;
 
+    exports controllers;
+    exports interactive;
+    exports controllers.menus;
+    exports controllers.modes;
     exports globals;
 }
