@@ -56,7 +56,7 @@ public class GlobalData {
     /**
      * The constant FRAME_PER_SECOND.
      */
-    public static int FRAME_PER_SECOND = 30;
+    public static int FRAME_PER_SECOND = 120;
 
     /**
      * Create cards array list.

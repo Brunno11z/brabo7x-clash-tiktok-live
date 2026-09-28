@@ -212,9 +212,9 @@ public abstract class Troop extends Card implements AttackAble {
     public void setPosition(Point2D position) {
         super.setPosition(position);
     }
-}
 
     @Override
     public double getMaxHP() {
         return this.maxHP;
     }
+}

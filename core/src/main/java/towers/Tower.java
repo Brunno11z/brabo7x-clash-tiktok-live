@@ -235,9 +235,9 @@ public abstract class Tower implements AttackAble, CanKnowItsExactTowerTypeTrait
     public TypeEnum getAttackType() {
         return attackType;
     }
-}
 
     @Override
     public double getMaxHP() {
         return this.maxHP;
     }
+}

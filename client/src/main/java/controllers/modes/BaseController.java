@@ -158,8 +158,8 @@ public abstract class BaseController implements CustomEventHandler {
      */
     public BaseController() {
         this.model = GlobalData.gameModel;
-        this.FRAME_PER_SECOND = GlobalData.FRAME_PER_SECOND;
-        this.eachFrameDuration = Math.round((double) 1000 / FRAME_PER_SECOND);
+        this.FRAME_PER_SECOND = Integer.getInteger("brabo7x.fps", GlobalData.FRAME_PER_SECOND);
+        this.eachFrameDuration = Math.max(1, Math.round((double) 1000 / FRAME_PER_SECOND));
         this.frameRemainingCount = (Boolean.getBoolean("brabo7x.tiktok") ? 24L * 60 * 60 : 3L * 60) * FRAME_PER_SECOND;
         this.previousMapElements = new ArrayList<>();
         this.numberOfPlayers = GlobalData.playerTeam.size() + GlobalData.opponentTeam.size();
@@ -215,12 +215,8 @@ public abstract class BaseController implements CustomEventHandler {
                 this.hudOverlayPane.setMouseTransparent(true);
                 this.hudOverlayPane.setPickOnBounds(false);
                 this.hudOverlayPane.setPrefSize(528, 946);
-                int cardsIdx = parentPane.getChildren().indexOf(this.cardsGroup);
-                if (cardsIdx >= 0) {
-                    parentPane.getChildren().add(cardsIdx, this.hudOverlayPane);
-                } else {
-                    parentPane.getChildren().add(this.hudOverlayPane);
-                }
+                parentPane.getChildren().remove(this.hudOverlayPane);
+                parentPane.getChildren().add(this.hudOverlayPane);
             }
         }
 

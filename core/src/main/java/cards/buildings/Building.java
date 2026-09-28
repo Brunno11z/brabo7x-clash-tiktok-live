@@ -18,6 +18,7 @@ public abstract class Building extends Card implements AttackAble {
     private double remainingFrameCount;
     private AttackAble target;
     private int HP;
+    private final int maxHP;
     private double damage;
     private double hitSpeed;
     private boolean shooting;
@@ -50,6 +51,7 @@ public abstract class Building extends Card implements AttackAble {
                        TypeEnum attackType) {
         super(id, cost, owner, position);
         this.HP = HP;
+        this.maxHP = HP;
         this.radius = radius;
         this.damage = damage;
         this.hitSpeed = hitSpeed;
@@ -156,8 +158,13 @@ public abstract class Building extends Card implements AttackAble {
      *
      * @return the hp
      */
-    public int getHP() {
+    public double getHP() {
         return HP;
+    }
+
+    @Override
+    public double getMaxHP() {
+        return maxHP;
     }
 
     /**

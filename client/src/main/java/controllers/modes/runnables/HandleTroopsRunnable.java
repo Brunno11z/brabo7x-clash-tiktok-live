@@ -138,10 +138,15 @@ public record HandleTroopsRunnable(GameModel model, BaseController controller) i
     }
 
     private boolean isTimeForMove(Troop troop) {
+        int fps = Math.max(1, controller.getFRAME_PER_SECOND());
+        double scale = fps / 30.0;
+        int fastMod = Math.max(1, (int) Math.round(4 * scale));
+        int medMod = Math.max(1, (int) Math.round(7 * scale));
+        int slowMod = Math.max(1, (int) Math.round(11 * scale));
         return switch (troop.getMovementSpeed()) {
-            case FAST -> this.controller.getFrameRemainingCount() % 4 == 0;
-            case MEDIUM -> this.controller.getFrameRemainingCount() % 7 == 0;
-            case SLOW -> this.controller.getFrameRemainingCount() % 11 == 0;
+            case FAST -> this.controller.getFrameRemainingCount() % fastMod == 0;
+            case MEDIUM -> this.controller.getFrameRemainingCount() % medMod == 0;
+            case SLOW -> this.controller.getFrameRemainingCount() % slowMod == 0;
         };
     }
 

@@ -48,7 +48,7 @@ public class NormalBotModeController extends BotController {
         });
     }
 
-    @Override
+        @Override
     protected void setTimer() {
         Timer timer = new Timer("brabo7x-game-timer", true);
         TimerTask timerTask = new TimerTask() {
@@ -59,41 +59,41 @@ public class NormalBotModeController extends BotController {
 
                     NormalBotModeController.this.processInteractiveSpawns();
                     boolean interactive = TikTokInteractiveBridge.isEnabled();
-                    CountDownLatch latch = new CountDownLatch(interactive ? 5 : 6);
-
-                    executeFrameTask(new HandleTowersRunnable(
-                            NormalBotModeController.super.model,
-                            NormalBotModeController.this,
-                            timer
-                    ), latch);
-                    executeFrameTask(new HandleTroopsRunnable(
-                            NormalBotModeController.super.model,
-                            NormalBotModeController.this
-                    ), latch);
-                    executeFrameTask(new HandleSpellsRunnable(
-                            NormalBotModeController.super.model,
-                            NormalBotModeController.this
-                    ), latch);
-                    executeFrameTask(new HandleBuildingRunnable(
-                            NormalBotModeController.super.model,
-                            NormalBotModeController.this
-                    ), latch);
-                    executeFrameTask(new HandleElixirsCountRunnable(
-                            NormalBotModeController.super.model,
-                            NormalBotModeController.this
-                    ), latch);
-
-                    if (!interactive) {
-                        executeFrameTask(new HandleNormalBotMoveRunnable(
-                                NormalBotModeController.super.model,
-                                NormalBotModeController.this
-                        ), latch);
-                    }
 
                     try {
-                        latch.await(NormalBotModeController.super.eachFrameDuration, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+                        new HandleTowersRunnable(
+                                NormalBotModeController.super.model,
+                                NormalBotModeController.this,
+                                timer
+                        ).run();
+
+                        new HandleTroopsRunnable(
+                                NormalBotModeController.super.model,
+                                NormalBotModeController.this
+                        ).run();
+
+                        new HandleSpellsRunnable(
+                                NormalBotModeController.super.model,
+                                NormalBotModeController.this
+                        ).run();
+
+                        new HandleBuildingRunnable(
+                                NormalBotModeController.super.model,
+                                NormalBotModeController.this
+                        ).run();
+
+                        new HandleElixirsCountRunnable(
+                                NormalBotModeController.super.model,
+                                NormalBotModeController.this
+                        ).run();
+
+                        if (!interactive) {
+                            new HandleNormalBotMoveRunnable(
+                                    NormalBotModeController.super.model,
+                                    NormalBotModeController.this
+                            ).run();
+                        }
+                    } catch (Exception ignored) {
                     }
 
                     NormalBotModeController.super.render();
