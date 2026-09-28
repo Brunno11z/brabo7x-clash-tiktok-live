@@ -9,10 +9,11 @@ echo ============================================================
 echo.
 echo Este script vai verificar e instalar automaticamente:
 echo  1. Java JDK 21 (Eclipse Temurin)
-echo  2. Python 3.12
-echo  3. Apache Maven
-echo  4. Ambiente virtual Python e pacotes do TikTokLive
-echo  5. Compilacao inicial do jogo
+echo  2. JavaFX 21 SDK (Componentes graficos oficiais GluonHQ)
+echo  3. Python 3.12
+echo  4. Apache Maven 3.9
+echo  5. Ambiente virtual Python e pacotes do TikTokLive
+echo  6. Compilacao inicial dos modulos do jogo
 echo.
 pause
 
@@ -22,7 +23,7 @@ if not exist ".tools" mkdir ".tools"
 :: 1. VERIFICAR OU INSTALAR JAVA JDK 21
 :: -----------------------------------------------------------------
 echo.
-echo [1/5] Verificando Java JDK 21...
+echo [1/6] Verificando Java JDK 21...
 set "JAVA_CMD="
 
 where java >nul 2>nul
@@ -45,51 +46,48 @@ if not defined JAVA_CMD (
 if defined JAVA_CMD (
     echo [OK] Java detectado: "!JAVA_CMD!"
 ) else (
-    echo [BRABO7X] Java JDK 21 nao encontrado. Tentando instalar via Winget...
-    where winget >nul 2>nul
-    if %errorlevel%==0 (
-        winget install --id EclipseAdoptium.Temurin.21.JDK -e --silent --accept-source-agreements --accept-package-agreements
-        timeout /t 5 /nobreak >nul
-        for /d %%d in ("%ProgramFiles%\Eclipse Adoptium\jdk-21*") do (
-            if exist "%%d\bin\java.exe" set "JAVA_CMD=%%d\bin\java.exe"
-        )
-    )
-    
-    if not defined JAVA_CMD (
-        echo [BRABO7X] Baixando OpenJDK 21 portatil oficial para a pasta .tools...
-        powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u='https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.6%%2B7/OpenJDK21U-jdk_x64_windows_hotspot_21.0.6_7.zip'; $z='%~dp0.tools\jdk21.zip'; Write-Host 'Baixando JDK 21 (pode levar 1-2 min)...'; Invoke-WebRequest -Uri $u -OutFile $z; Expand-Archive -Path $z -DestinationPath '%~dp0.tools' -Force; Remove-Item $z -Force; Get-ChildItem '%~dp0.tools' -Directory -Filter 'jdk-21*' | Rename-Item -NewName 'jdk-21' -Force"
-        if exist ".tools\jdk-21\bin\java.exe" (
-            set "JAVA_CMD=%~dp0.tools\jdk-21\bin\java.exe"
-            echo [OK] JDK 21 portatil configurado com sucesso!
-        ) else (
-            echo [AVISO] Nao foi possivel baixar o JDK automaticamente. Instale manualmente o Temurin JDK 21 se necessario.
-        )
+    echo [BRABO7X] Java JDK 21 nao encontrado. Baixando OpenJDK 21 portatil...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u='https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.6%%2B7/OpenJDK21U-jdk_x64_windows_hotspot_21.0.6_7.zip'; $z='%~dp0.tools\jdk21.zip'; Write-Host 'Baixando JDK 21...'; Invoke-WebRequest -Uri $u -OutFile $z; Expand-Archive -Path $z -DestinationPath '%~dp0.tools' -Force; Remove-Item $z -Force; Get-ChildItem '%~dp0.tools' -Directory -Filter 'jdk-21*' | Rename-Item -NewName 'jdk-21' -Force"
+    if exist ".tools\jdk-21\bin\java.exe" (
+        set "JAVA_CMD=%~dp0.tools\jdk-21\bin\java.exe"
+        echo [OK] JDK 21 configurado com sucesso!
     )
 )
 
 :: -----------------------------------------------------------------
-:: 2. VERIFICAR OU INSTALAR PYTHON 3.12
+:: 2. VERIFICAR OU INSTALAR JAVAFX 21 SDK
 :: -----------------------------------------------------------------
 echo.
-echo [2/5] Verificando Python 3.12...
+echo [2/6] Verificando JavaFX 21 SDK...
+if exist ".tools\javafx-sdk-21\lib\javafx.controls.jar" (
+    echo [OK] JavaFX 21 SDK detectado em .tools\javafx-sdk-21!
+) else (
+    echo [BRABO7X] Baixando JavaFX 21 SDK oficial (GluonHQ)...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u='https://download2.gluonhq.com/openjfx/21.0.2/openjfx-21.0.2_windows-x64_bin-sdk.zip'; $z='%~dp0.tools\javafx.zip'; Write-Host 'Baixando JavaFX 21 (48 MB)...'; Invoke-WebRequest -Uri $u -OutFile $z; Expand-Archive -Path $z -DestinationPath '%~dp0.tools' -Force; Remove-Item $z -Force; Get-ChildItem '%~dp0.tools' -Directory -Filter 'javafx-sdk-*' | Rename-Item -NewName 'javafx-sdk-21' -Force"
+    if exist ".tools\javafx-sdk-21\lib\javafx.controls.jar" (
+        echo [OK] JavaFX 21 SDK instalado com sucesso!
+    ) else (
+        echo [AVISO] Nao foi possivel descompactar o JavaFX SDK. O Maven tentara usar dependencias locais.
+    )
+)
+
+:: -----------------------------------------------------------------
+:: 3. VERIFICAR OU INSTALAR PYTHON 3.12
+:: -----------------------------------------------------------------
+echo.
+echo [3/6] Verificando Python...
 set "PY_CMD="
 
 where py >nul 2>nul
 if %errorlevel%==0 (
-    py -3.12 --version >nul 2>nul
-    if %errorlevel%==0 set "PY_CMD=py -3.12"
-)
-
-if not defined PY_CMD (
+    set "PY_CMD=py"
+) else (
     where python >nul 2>nul
-    if %errorlevel%==0 (
-        python -c "import sys; sys.exit(0 if sys.version_info[0]==3 and sys.version_info[1]>=10 else 1)" >nul 2>nul
-        if %errorlevel%==0 set "PY_CMD=python"
-    )
+    if %errorlevel%==0 set "PY_CMD=python"
 )
 
 if not defined PY_CMD (
-    for /d %%d in ("%LOCALAPPDATA%\Programs\Python\Python312*" "%ProgramFiles%\Python312*") do (
+    for /d %%d in ("%LOCALAPPDATA%\Programs\Python\Python3*" "%ProgramFiles%\Python3*") do (
         if exist "%%d\python.exe" set "PY_CMD=%%d\python.exe"
     )
 )
@@ -97,50 +95,38 @@ if not defined PY_CMD (
 if defined PY_CMD (
     echo [OK] Python detectado: !PY_CMD!
 ) else (
-    echo [BRABO7X] Python 3.12 nao detectado. Tentando instalar via Winget...
-    where winget >nul 2>nul
-    if %errorlevel%==0 (
-        winget install --id Python.Python.3.12 -e --silent --accept-source-agreements --accept-package-agreements
-        timeout /t 5 /nobreak >nul
-        for /d %%d in ("%LOCALAPPDATA%\Programs\Python\Python312*") do (
-            if exist "%%d\python.exe" set "PY_CMD=%%d\python.exe"
-        )
-    )
-    if not defined PY_CMD (
-        echo [BRABO7X] Baixando instalador oficial do Python 3.12...
-        powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $u='https://www.python.org/ftp/python/3.12.8/python-3.12.8-amd64.exe'; $f='%~dp0.tools\python_installer.exe'; Invoke-WebRequest -Uri $u -OutFile $f; Start-Process $f -ArgumentList '/quiet InstallAllUsers=0 PrependPath=1 Include_pip=1' -Wait; Remove-Item $f -Force"
-        set "PY_CMD=python"
-    )
+    echo [BRABO7X] Baixando instalador do Python 3.12...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $u='https://www.python.org/ftp/python/3.12.8/python-3.12.8-amd64.exe'; $f='%~dp0.tools\python_installer.exe'; Invoke-WebRequest -Uri $u -OutFile $f; Start-Process $f -ArgumentList '/quiet InstallAllUsers=0 PrependPath=1 Include_pip=1' -Wait; Remove-Item $f -Force"
+    set "PY_CMD=python"
 )
 
 :: -----------------------------------------------------------------
-:: 3. VERIFICAR OU INSTALAR APACHE MAVEN
+:: 4. VERIFICAR OU INSTALAR APACHE MAVEN
 :: -----------------------------------------------------------------
 echo.
-echo [3/5] Verificando Apache Maven...
+echo [4/6] Verificando Apache Maven...
 set "MVN_CMD="
 
 where mvn >nul 2>nul
 if %errorlevel%==0 set "MVN_CMD=mvn"
 
 if not defined MVN_CMD (
-    if exist ".tools\apache-maven-3.9.16\bin\mvn.cmd" set "MVN_CMD=%~dp0.tools\apache-maven-3.9.16\bin\mvn.cmd"
     if exist ".tools\apache-maven\bin\mvn.cmd" set "MVN_CMD=%~dp0.tools\apache-maven\bin\mvn.cmd"
+    if exist ".tools\apache-maven-3.9.16\bin\mvn.cmd" set "MVN_CMD=%~dp0.tools\apache-maven-3.9.16\bin\mvn.cmd"
 )
 
 if not defined MVN_CMD (
     echo [BRABO7X] Baixando Apache Maven oficial...
     powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u='https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.zip'; $z='%~dp0.tools\maven.zip'; Invoke-WebRequest -Uri $u -OutFile $z; Expand-Archive -Path $z -DestinationPath '%~dp0.tools' -Force; Remove-Item $z -Force; if (Test-Path '%~dp0.tools\apache-maven-3.9.16') { Rename-Item '%~dp0.tools\apache-maven-3.9.16' '%~dp0.tools\apache-maven' -Force -ErrorAction SilentlyContinue }"
     if exist ".tools\apache-maven\bin\mvn.cmd" set "MVN_CMD=%~dp0.tools\apache-maven\bin\mvn.cmd"
-    if exist ".tools\apache-maven-3.9.16\bin\mvn.cmd" set "MVN_CMD=%~dp0.tools\apache-maven-3.9.16\bin\mvn.cmd"
 )
 echo [OK] Maven pronto!
 
 :: -----------------------------------------------------------------
-:: 4. CONFIGURAR AMBIENTE PYTHON E DEPENDENCIAS
+:: 5. CONFIGURAR AMBIENTE PYTHON E DEPENDENCIAS
 :: -----------------------------------------------------------------
 echo.
-echo [4/5] Configurando ambiente virtual Python (brabo7x_live)...
+echo [5/6] Configurando ambiente virtual Python (brabo7x_live)...
 if not exist "brabo7x_live\.venv\Scripts\python.exe" (
     !PY_CMD! -m venv "brabo7x_live\.venv"
 )
@@ -152,15 +138,13 @@ if exist "!VPY!" (
     "!VPY!" -m pip install -r "brabo7x_live\requirements.txt"
     echo ok>"brabo7x_live\.deps_ok"
     echo [OK] Dependencias Python instaladas com sucesso!
-) else (
-    echo [AVISO] Nao foi possivel criar o venv automaticamente.
 )
 
 :: -----------------------------------------------------------------
-:: 5. PRE-COMPILAR O JOGO JAVA
+:: 6. PRE-COMPILAR O JOGO JAVA
 :: -----------------------------------------------------------------
 echo.
-echo [5/5] Pre-compilando modulos do jogo Java (pode levar 1 min)...
+echo [6/6] Pre-compilando modulos do jogo Java...
 if defined JAVA_CMD (
     for %%F in ("!JAVA_CMD!") do set "JAVA_HOME_DIR=%%~dpF.."
     set "JAVA_HOME=!JAVA_HOME_DIR!"
@@ -174,7 +158,6 @@ echo.
 echo ============================================================
 echo   TUDO PRONTO! INSTALACAO CONCLUIDA COM SUCESSO!
 echo ============================================================
-echo Agora voce pode clicar em INICIAR_TUDO_TIKTOK.bat
-echo ou abrir o painel e o jogo separadamente.
+echo Agora voce pode executar o INICIAR_TUDO_TIKTOK.bat
 echo.
 pause
