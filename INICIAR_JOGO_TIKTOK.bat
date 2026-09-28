@@ -44,7 +44,7 @@ if errorlevel 1 (
 )
 
 echo [BRABO7X] Iniciando arena Clash Royale LIVE (JavaFX)...
-"%MVN%" -pl client -am javafx:run -Dbrabo7x.tiktok=true
+"%MVN%" clean compile -pl client -am javafx:run -Dbrabo7x.tiktok=true
 if errorlevel 1 goto :game_error
 exit /b 0
 
