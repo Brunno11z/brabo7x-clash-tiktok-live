@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
-title BRABO7X - Painel TikTok Clash LIVE
+title BRABO7X - Servidor Painel TikTok LIVE
 
 set "PY_CMD="
 where py >nul 2>nul
@@ -22,7 +22,7 @@ if not exist "brabo7x_live\.venv\Scripts\python.exe" (
     echo [BRABO7X] Criando ambiente Python local...
     if not defined PY_CMD (
         echo [ERRO] Python 3.12 nao encontrado.
-        echo Execute o "INSTALAR_TUDO_AUTOMATICO.bat" para instalar tudo de uma vez.
+        echo Execute o "INSTALAR_TUDO_AUTOMATICO.bat" para instalar o Python automaticamente.
         pause
         exit /b 1
     )
@@ -31,15 +31,24 @@ if not exist "brabo7x_live\.venv\Scripts\python.exe" (
 
 set "VPY=brabo7x_live\.venv\Scripts\python.exe"
 if not exist "brabo7x_live\.deps_ok" (
-    echo [BRABO7X] Instalando dependencias na primeira execucao...
+    echo [BRABO7X] Instalando dependencias na primeira execucao (isso pode demorar 1 minuto)...
     "%VPY%" -m pip install --upgrade pip
     "%VPY%" -m pip install -r "brabo7x_live\requirements.txt"
     if errorlevel 1 goto :dep_error
     echo ok>"brabo7x_live\.deps_ok"
 )
 
-echo [BRABO7X] Iniciando Painel Studio em http://127.0.0.1:8765 ...
+echo.
+echo ============================================================
+echo   [OK] PAINEL STUDIO INICIADO COM SUCESSO!
+echo   Abrindo no navegador: http://127.0.0.1:8765
+echo   (Mantenha esta janela aberta enquanto a live estiver ativa)
+echo ============================================================
+echo.
+
+start "" "http://127.0.0.1:8765"
 "%VPY%" "brabo7x_live\app.py"
+pause
 exit /b 0
 
 :dep_error
