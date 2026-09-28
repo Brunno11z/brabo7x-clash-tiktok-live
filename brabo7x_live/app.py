@@ -382,11 +382,15 @@ def run_tiktok_client(username: str, api_key: str) -> None:
             pass
 
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 @app.on_event("startup")
 async def on_startup() -> None:
     global _main_loop
     _main_loop = asyncio.get_running_loop()
     await add_log("system", "Painel BRABO7X iniciado em http://127.0.0.1:8765")
+    print("[BRABO7X] Servidor online! Abra http://127.0.0.1:8765 no navegador.")
 
 
 @app.get("/", response_class=HTMLResponse)
