@@ -1,0 +1,15 @@
+{
+  "tiktok_username": "",
+  "euler_api_key": "",
+  "max_spawn_per_event": 20,
+  "gift_rules": [
+    {"enabled": true, "gift_id": "", "gift_name": "Rose", "team": "blue", "card": "Archer", "count": 1, "lane": "auto"},
+    {"enabled": true, "gift_id": "", "gift_name": "TikTok", "team": "red", "card": "Barbarian", "count": 1, "lane": "auto"}
+  ],
+  "comment_rules": [
+    {"enabled": true, "trigger": "azul", "match": "exact", "team": "blue", "card": "Archer", "count": 1, "lane": "auto"},
+    {"enabled": true, "trigger": "vermelho", "match": "exact", "team": "red", "card": "Barbarian", "count": 1, "lane": "auto"},
+    {"enabled": true, "trigger": "gigante azul", "match": "contains", "team": "blue", "card": "Giant", "count": 1, "lane": "left"},
+    {"enabled": true, "trigger": "gigante vermelho", "match": "contains", "team": "red", "card": "Giant", "count": 1, "lane": "right"}
+  ]
+}
