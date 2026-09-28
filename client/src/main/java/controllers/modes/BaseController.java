@@ -19,6 +19,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.StrokeType;
+import javafx.scene.text.FontWeight;
+import cards.troops.Troop;
+
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -42,6 +47,8 @@ public abstract class BaseController implements CustomEventHandler {
     protected final long eachFrameDuration;
     private final GameModel model;
     private final ArrayList<ImageView> previousMapElements;
+    private Pane hudOverlayPane;
+    private final ArrayList<Node> activeHudElements = new ArrayList<>();
     /**
      * The Frame remaining count.
      */
@@ -199,6 +206,22 @@ public abstract class BaseController implements CustomEventHandler {
             this.playerName2.setVisible(true);
             this.opponentName2.setVisible(true);
 
+        }
+
+        
+        if (this.mapCells != null && this.mapCells.getParent() instanceof Pane parentPane) {
+            if (this.hudOverlayPane == null) {
+                this.hudOverlayPane = new Pane();
+                this.hudOverlayPane.setMouseTransparent(true);
+                this.hudOverlayPane.setPickOnBounds(false);
+                this.hudOverlayPane.setPrefSize(528, 946);
+                int cardsIdx = parentPane.getChildren().indexOf(this.cardsGroup);
+                if (cardsIdx >= 0) {
+                    parentPane.getChildren().add(cardsIdx, this.hudOverlayPane);
+                } else {
+                    parentPane.getChildren().add(this.hudOverlayPane);
+                }
+            }
         }
 
         this.playerTeamCrowns = new ImageView[]{playerCrown1, playerCrown2, playerCrown3};
@@ -779,6 +802,7 @@ public abstract class BaseController implements CustomEventHandler {
         refreshMap();
         handleInMapCards();
         handleTowers();
+        renderHealthBars();
         handleBattleCards();
         handleInvalidCards();
         handleComingCards();
@@ -787,4 +811,111 @@ public abstract class BaseController implements CustomEventHandler {
         handleTime();
 
     }
+
+
+    private void renderHealthBars() {
+        if (this.hudOverlayPane == null) return;
+        this.hudOverlayPane.getChildren().clear();
+
+        // 1. Render Tower Health Bars
+        ArrayList<Tower> playerTowers = this.model.getPlayerTowers();
+        ArrayList<Tower> opponentTowers = new ArrayList<>();
+        if (this.model instanceof BotModeModel) {
+            opponentTowers = ((BotModeModel) this.model).getBotTowers();
+        } else if (this.model instanceof OnlineModeModel) {
+            opponentTowers = ((OnlineModeModel) this.model).getOpponentTowers();
+        }
+
+        for (Tower tower : playerTowers) {
+            if (!tower.isDead() && tower.getPosition() != null) {
+                drawTowerBar(tower, tower.getPosition(), Color.rgb(30, 144, 255), false);
+            }
+        }
+
+        for (Tower tower : opponentTowers) {
+            if (!tower.isDead() && tower.getPosition() != null) {
+                drawTowerBar(tower, transferPosition(tower.getPosition()), Color.rgb(239, 68, 68), true);
+            }
+        }
+
+        // 2. Render Troop Health Bars
+        for (Troop troop : this.model.getPlayerInMapTroops()) {
+            if (!troop.isDead() && troop.getPosition() != null) {
+                drawTroopBar(troop, troop.getPosition(), Color.rgb(30, 144, 255));
+            }
+        }
+
+        ArrayList<Troop> opponentTroops = (this.model instanceof BotModeModel)
+                ? ((BotModeModel) this.model).getBotInMapTroops()
+                : (this.model instanceof OnlineModeModel ? ((OnlineModeModel) this.model).getOpponentInMapTroops() : new ArrayList<>());
+
+        for (Troop troop : opponentTroops) {
+            if (!troop.isDead() && troop.getPosition() != null) {
+                drawTroopBar(troop, transferPosition(troop.getPosition()), Color.rgb(239, 68, 68));
+            }
+        }
+    }
+
+    private void drawTowerBar(Tower tower, Point2D pos, Color teamColor, boolean isOpponent) {
+        double cellW = 528.0 / 24.0;
+        double cellH = 946.0 / 43.0;
+        double centerX = pos.getX() * cellW + (cellW / 2.0);
+        double centerY = pos.getY() * cellH;
+
+        boolean isKing = tower.isKingTower();
+        double barWidth = isKing ? 74.0 : 56.0;
+        double barHeight = 8.0;
+        double x = centerX - (barWidth / 2.0);
+        double y = isOpponent ? centerY - 14.0 : centerY - 10.0;
+
+        double maxHp = Math.max(1.0, tower.getMaxHP());
+        double currHp = Math.max(0.0, tower.getHP());
+        double ratio = Math.max(0.0, Math.min(1.0, currHp / maxHp));
+
+        Rectangle bg = new Rectangle(x, y, barWidth, barHeight);
+        bg.setArcWidth(4);
+        bg.setArcHeight(4);
+        bg.setFill(Color.rgb(15, 23, 42, 0.85));
+        bg.setStroke(Color.rgb(255, 255, 255, 0.4));
+        bg.setStrokeWidth(1);
+
+        Rectangle fill = new Rectangle(x + 1, y + 1, (barWidth - 2) * ratio, barHeight - 2);
+        fill.setArcWidth(3);
+        fill.setArcHeight(3);
+        fill.setFill(ratio < 0.25 ? Color.rgb(239, 68, 68) : teamColor);
+
+        Text hpText = new Text(x, y - 2, ((int) currHp) + "/" + ((int) maxHp));
+        hpText.setFill(Color.WHITE);
+        hpText.setFont(javafx.scene.text.Font.font("System", FontWeight.BOLD, 8.5));
+
+        this.hudOverlayPane.getChildren().addAll(bg, fill, hpText);
+    }
+
+    private void drawTroopBar(Troop troop, Point2D pos, Color teamColor) {
+        double cellW = 528.0 / 24.0;
+        double cellH = 946.0 / 43.0;
+        double centerX = pos.getX() * cellW + (cellW / 2.0);
+        double topY = pos.getY() * cellH - 4.0;
+
+        double barWidth = 24.0;
+        double barHeight = 4.0;
+        double x = centerX - (barWidth / 2.0);
+
+        double maxHp = Math.max(1.0, troop.getMaxHP());
+        double currHp = Math.max(0.0, troop.getHP());
+        double ratio = Math.max(0.0, Math.min(1.0, currHp / maxHp));
+
+        Rectangle bg = new Rectangle(x, topY, barWidth, barHeight);
+        bg.setArcWidth(2);
+        bg.setArcHeight(2);
+        bg.setFill(Color.rgb(15, 23, 42, 0.8));
+
+        Rectangle fill = new Rectangle(x + 0.5, topY + 0.5, (barWidth - 1) * ratio, barHeight - 1);
+        fill.setArcWidth(2);
+        fill.setArcHeight(2);
+        fill.setFill(ratio < 0.3 ? Color.rgb(234, 179, 8) : teamColor);
+
+        this.hudOverlayPane.getChildren().addAll(bg, fill);
+    }
+
 }
