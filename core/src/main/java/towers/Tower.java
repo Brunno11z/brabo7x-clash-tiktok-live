@@ -25,6 +25,7 @@ public abstract class Tower implements AttackAble, CanKnowItsExactTowerTypeTrait
     private boolean active;
     private AttackAble target;
     private double HP;
+    private final double maxHP;
     private double hitSpeed;
     private Point2D position;
 
@@ -43,6 +44,7 @@ public abstract class Tower implements AttackAble, CanKnowItsExactTowerTypeTrait
     protected Tower(UUID id, User owner, int demolitionBonusCount, boolean active, int range, int HP, int damage, Point2D position) {
         this.id = id;
         this.HP = HP;
+        this.maxHP = HP;
         this.damage = damage;
         this.owner = owner;
         this.demolitionBonusCount = demolitionBonusCount;
@@ -234,3 +236,8 @@ public abstract class Tower implements AttackAble, CanKnowItsExactTowerTypeTrait
         return attackType;
     }
 }
+
+    @Override
+    public double getMaxHP() {
+        return this.maxHP;
+    }
