@@ -23,6 +23,7 @@ public abstract class Troop extends Card implements AttackAble {
     private double hitSpeed;
     private AttackAble target;
     private double HP;
+    private final double maxHP;
 
     /**
      * Instantiates a new Card.
@@ -54,6 +55,7 @@ public abstract class Troop extends Card implements AttackAble {
                     TypeEnum attackType) {
         super(id, cost, owner, position);
         this.HP = HP;
+        this.maxHP = HP;
         this.damage = damage;
         this.movementSpeed = speed;
         this.areaSplash = areaSplash;
@@ -211,3 +213,8 @@ public abstract class Troop extends Card implements AttackAble {
         super.setPosition(position);
     }
 }
+
+    @Override
+    public double getMaxHP() {
+        return this.maxHP;
+    }
