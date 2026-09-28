@@ -167,7 +167,7 @@ if defined JAVA_CMD (
     set "PATH=!JAVA_HOME_DIR!\bin;!PATH!"
 )
 if defined MVN_CMD (
-    call "!MVN_CMD!" -pl client -am compile -DskipTests
+    call "!MVN_CMD!" clean install -DskipTests
 )
 
 echo.
